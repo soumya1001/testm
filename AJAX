@@ -1,0 +1,53 @@
+$(document).on("click", ".deleteContact2", function () {
+  let id = $(this).closest(".dropdown").parent("td").parent("tr").attr("data-id")
+  var tr = $(this).closest(".dropdown").parent("td").parent("tr")
+	Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to delete this vehicle?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes",
+        closeOnConfirm: false
+    }).then(function (isConfirm) {
+        if (!isConfirm.isConfirmed) return
+        $.ajax({
+            type: "POST",
+            url: '/delete-contact',
+            data: {
+                'id': id,
+            },
+            dataType : "JSON",
+            beforeSend:function(){
+                showLoader();
+            },
+            success: function (response) {
+                hideLoader();
+                if(response.status == true){
+                    swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer : 2000
+                    }).then(function(){
+                        tr.remove()
+                    })
+                }else{
+                    if(response.return){
+						window.location.href = '/logout'
+					}else{
+						swalAlert(response.message,'error')
+					}
+                }
+            },
+            error: function (xhr, response, thrownError) {
+                hideLoader()
+                if(response.responseJSON.return){
+					window.location.href = '/logout'
+				}else{
+					swalAlert(response.responseJSON.message,'error')
+				}
+            }
+        })
+    })
+})
